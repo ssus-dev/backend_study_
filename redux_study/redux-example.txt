@@ -1,0 +1,120 @@
+// user.jsx
+import React from "react";
+import { createSlice } from "@reduxjs/toolkit";
+
+export const userSlice = createSlice({
+    name: "user",
+    initialState: {
+        value: {
+            name: "",
+            age: 0,
+            email: ""
+        }
+    },
+    reducers: {
+        login: (state, action) => {
+            state.value = action.payload
+        },
+    },
+})
+
+export default userSlice.reducer;
+
+/////////////////////////////////////////////////////////////////////////////
+/* 스토어에 리듀서 적용*/
+/////////////////////////////////////////////////////////////////////////////
+import { configureStore } from "@reduxjs/toolkit";
+import { userSlice } from "./user";
+
+export default configureStore({
+    reducer: {
+        user: userSlice
+    },
+})
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+ //// store.js
+import {createSlice,configureStore} from '@reduxjs/toolkit';
+
+const initialCounterState = {
+    counter:0,
+    showCounter:true
+};
+
+const counterSlice = createSlice({
+    name:'counter',
+    initialState:initialCounterState,
+    reducers: {
+        increment(state){
+            state.counter++;
+        },
+        decrement(state){
+            state.counter--;
+        },
+        toggle(state){
+            state.showCounter = !state.showCounter
+        }
+    }
+});
+//-----------------------------------------------------------------
+  
+const initialAuthState = {
+    isAuthenticated:false
+};
+
+const authSlice = createSlice({
+    name:'auth',
+    initialState: initialAuthState,
+    reducers:{
+        login(state){
+            state.isAuthenticated =  true;
+        },
+        logout(state){
+            state.isAuthenticated = false;
+        }
+    }
+});
+
+const store = configureStore({//root reducer
+    reducer: {
+        counter: counterSlice.reducer, 
+        auth:authSlice.reducer
+    }
+});
+export const counterActions = counterSlice.actions;
+
+export const authActions = authSlice.actions;
+export default store;
+
+
+
+// 사용예제1
+const counterSlice = createSlice({
+    name:'counter',
+    initialState:initialCounterState,
+    reducers: {
+        increment(state){
+            state.counter++;
+        },
+        decrement(state){
+            state.counter--;
+        },
+        toggle(state){
+            state.showCounter = !state.showCounter
+        }
+    }
+});
+
+
+// 사용예제2
+import { useSelector, useDispatch } from 'react-redux';
+import {authActions,counterActions} from '../store/index';
+
+const logoutHandler = () => {
+    dispatch(authActions.logout());
+  }
+
+만약 payload가 필요하다면 dispatch(authActions.logout(payloadValue)); 를 호출

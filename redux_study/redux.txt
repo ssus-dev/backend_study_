@@ -1,0 +1,102 @@
+리덕스 키워드
+1. 액션 : 상태에 변화가 필요하면 액션을 발생 
+    - json 형태의 객체로 표현
+    - 반드시 type필드를 가지고 있어야함
+    - 예시
+        {
+            type: ‘ADD_TODO‘,
+            data: {
+                id: 1,
+                text: ‘리덕스 배우기‘
+            }
+        }
+
+2. 액션생성함수 : 액션객체를 만들어주는 함수
+    - 변화를 일으킬 때마다 액션객체를 직정 생성하기 번거로우니 미리 만들어두고 관리한다
+    - 예시
+        const changeInput = text => ({ 
+            type: 'CHANGE_INPUT',
+            text
+        });
+
+3. 리듀서 : 변화를 일으키는 함수, 액션이 발생되면 리듀서가 현재상태와 전달받은 액션 객체를 파라미터로 받아온 뒤 값을 비교하여 새로운 상태로 반환
+    - 형태
+        const initialState = {
+            counter: 1
+        };
+        function reducer(state = initialState, action) {
+            switch (action.type) {
+            case INCREMENT:
+                return {
+                    counter: state.counter + 1
+                };
+            default:
+                return state;
+            }
+        }
+
+    - 리듀서에서는 상태의 불변성을 유지하면서 데이터에 변화를 줘야함 (해당 작업에 스프레드 연산자를 사용할 것!) 
+      구조가 복잡(object.something.inside.value)해진다면 스프레드 연산자로는 어렵다, 리덕스의 상태는 깊은 구조로 작업하지 않아야함 => immer함수로 쉽게 관리가능 툴킷사용하면 immer가 자동으로 된다
+
+
+4. 스토어 : 프로젝트에 리덕스 적용을 위해 필요하며, 한 프로젝트에 스토어는 단 한개여야함
+    - 스토어 생성
+        1. createStore()  =>  현재 사용권장X  => configureStore()
+
+
+5. 디스패치 : 스토어 내장 함수로 액션을 발생시키며, 함수가 호출되면 스토어는 리듀서 함수를 실행시켜 새로운 상태로 변화
+    - 형태 : dispatch(action)
+    - useDispatch() : action 실행용 hook
+    - useSelector() : action 조회용 hook
+    - 예시
+    import { useEffect, useState } from "react";
+    import { useDispatch, useSelector } from "react-redux";
+    import { boardSelector, fetchBoard } from "redux/modules/board";
+
+    export const useFetchBoard = () => {
+        const dispatch = useDispatch();
+        const boards = useSelector(boardSelector()); //리듀서 내부에 작성하는 state 조회용 변수 (아래 board.js 예시참고)
+        const [loading, setLoading] = useState(true);
+
+        const fetch = () => !boards && dispatch(fetchBoard());
+
+        useEffect(() => fetch(), []);
+        useEffect(() => boards && setLoading(false), [boards]);
+
+        return { loading, boards, fetch };
+    };    
+
+    board.js
+    const board = createSlice({
+        name: "boardReducer",
+        initialState: {
+            boards: [],
+        }
+        ...
+
+    export const boardSelector = (state) => state.board.boards;
+
+    user.js (액션함수 사용)
+    const user = createSlice({
+        name: "UserReducer",
+        reducers: {
+            setUserName: (state, action) => {
+            state.name = action.payload
+            },
+    },
+    ...
+    export const { setUserName } = user.actions;
+
+
+
+
+6. 구독 : 스토어 내장 함수로 subscribe함수에 리스너 함수를 파라미터로 넣어 호출하면 액션이 디스패치되어 상태 업데이트될 때마다 호출된다(리스너 함수가! 상태 변할때마다 호출된다고)
+    - 형태
+    const listener = () => {
+        console.log(‘상태가 업데이트됨‘);
+
+    }
+    const unsubscribe = store.subscribe(listener);
+
+    unsubscribe(); // 추후 구독 비활성화할 때 호출해야함 (필요없어질 때)
+

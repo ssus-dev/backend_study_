@@ -1,0 +1,123 @@
+//App.js (스토어 등록)
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./components/App";
+import { Provider } from "react-redux";
+import { store } from "./store";
+
+ReactDOM.render(
+  <Provider store={store}>
+    <React.StrictMode>
+      <ThemeProvider theme={theme}>
+        <App />
+      </ThemeProvider>
+    </React.StrictMode>
+  </Provider>,
+  document.getElementById("root")
+);
+
+
+import logger from "redux-logger";
+import { configureStore } from "@reduxjs/toolkit";
+
+export const store = () => {
+    const store = configureStore({
+        reducer: { users: usersReducer, posts: postsReducer },
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
+        /**
+         * 기본 미들웨어에 사용자가 미들웨어를 추가하여 함께 사용하겠다
+         * 기본 미들웨어?
+         * - 불변성 검사 미들웨어 : 값을 직접 수정한 경우 (mutation) error를 발생시키는 역할 (redux-immutable-state-invariant)
+         * - 직렬화 가능성 검사 미들웨어 : 직렬화 할 수 없는 Promise와 같은 객체를 받았을때 error를 발생시키는 역할
+         * 
+         * 기본 미들웨어 없이 사용자 정의 미들웨어만 사용 시
+         * middleware: [thunk, logger],
+         */
+        //
+        
+        devTools: process.env.NODE_ENV !== "production", //  개발자 도구 on/off
+        // preloadedState: {}, // 스토어의 초기값
+        // 개발자가 원하는 store enhancer를 미들웨어가 적용되는 순서보다 앞서서 추가 가능
+        // enhancers: [reduxBatch],
+    });
+};
+
+//이렇게 store 생성하면 알아서 하나의 리듀서로 묶어줌
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//분리형
+
+//rootReducer.js
+import board from "./modules/board";
+import review from "./modules/review";
+import { combineReducers } from "@reduxjs/toolkit";
+
+export const rootReducer = combineReducers({
+  board,
+  review,
+});
+
+
+//store.js
+import { configureStore } from "@reduxjs/toolkit";
+import { rootReducer } from "./rootReducer";
+
+export const store = () => {
+  const store = configureStore({
+    reducer: rootReducer,
+  });
+};
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 리듀서의 작동 (toolkit)
+
+
+//counterSlice.js
+import { createSlice } from '@reduxjs/toolkit'
+
+const initialState = { value: 0 }
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState,
+  reducers: {
+    increment(state) {
+      state.value++
+    },
+    decrement(state) {
+      state.value--
+    },
+    incrementByAmount(state, action) {
+      state.value += action.payload
+    },
+  },
+})
+
+export const { increment, decrement, incrementByAmount } = counterSlice.actions
+export default counterSlice.reducer
+
+//counterSlice 반환 내용
+
+{
+    name : string,
+    reducer : ReducerFunction,
+    actions : Record<string, ActionCreator>,
+    caseReducers: Record<string, CaseReducer>.
+    getInitialState: () => State
+}
+
+
+// store에 적용된 counterSlice
+import { configureStore } from "@reduxjs/toolkit";
+import { counterSlice } from "./services/counter";
+
+export const store = () => {
+  const store = configureStore({
+    reducer: counterSlice,
+  });
+};
